@@ -10,7 +10,6 @@ import Axios from "axios";
 import store from "./store/store";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap-css-only/css/bootstrap.min.css";
-// import "mdbreact/dist/css/mdb.css";
 import * as actions from "./store/actions/index";
 
 Axios.defaults.baseURL = "http://localhost:5000/";
@@ -25,7 +24,7 @@ let app = (
   </Provider>
 );
 
-Axios.interceptors.request.use(function(config) {
+Axios.interceptors.request.use(function (config) {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = token;
@@ -36,5 +35,4 @@ Axios.interceptors.request.use(function(config) {
 
 ReactDOM.render(app, document.getElementById("root"));
 
-// ReactDOM.render(<App />, document.getElementById("root"));
 registerServiceWorker();

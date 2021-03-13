@@ -3,6 +3,5 @@ export {
     logout,
     authStateCheck,
     signup,
-    updateUser,
-    changePassword
+    setSignedUpToFalse
   } from "./auth";

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Axios from "axios";
 import Input from "../../../components/UI/Input/Input";
-import { signup } from "../../../store/actions/index";
+import { signup, setSignedUpToFalse } from "../../../store/actions/index";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import withErrorHandler from "../../../hoc/withErrorHandler/withErrorHandler";
@@ -11,90 +11,65 @@ import Spinner from "../../../components/UI/Spinner/Spinner";
 class Signup extends Component {
   state = {
     controls: {
-      // firstname: {
-      //   elementType: "input",
-      //   elementConfig: {
-      //     type: "text",
-      //     placeholder: "First Name"
-      //   },
-      //   value: "",
-      //   validation: {
-      //     required: true
-      //   },
-      //   valid: false,
-      //   touched: false
-      // },
-      // lastname: {
-      //   elementType: "input",
-      //   elementConfig: {
-      //     type: "text",
-      //     placeholder: "Last Name"
-      //   },
-      //   value: "",
-      //   validation: {
-      //     required: true
-      //   },
-      //   valid: false,
-      //   touched: false
-      // },
       username: {
         elementType: "input",
         elementConfig: {
           type: "text",
-          placeholder: "username"
+          placeholder: "Name",
         },
         value: "",
         validation: {
-          required: true
+          required: true,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
       password: {
         elementType: "input",
         elementConfig: {
           type: "password",
-          placeholder: "Password"
+          placeholder: "Password",
         },
         value: "",
         validation: {
           required: true,
-          isPassword: true
+          isPassword: true,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
       passwordConfirmation: {
         elementType: "input",
         elementConfig: {
           type: "password",
-          placeholder: "Password Confirmation"
+          placeholder: "Password Confirmation",
         },
         value: "",
         validation: {
           required: true,
-          equalsPassword: true
+          equalsPassword: true,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
       email: {
         elementType: "input",
         elementConfig: {
           type: "email",
-          placeholder: "Email"
+          placeholder: "Email",
         },
         value: "",
         validation: {
-          required: true
+          required: true,
+          isEmail: true,
         },
         valid: false,
-        touched: false
-      }
+        touched: false,
+      },
     },
     formIsValid: false,
     visible: false,
-    message: null
+    message: null,
   };
 
   checkValidity = (value, rules) => {
@@ -102,19 +77,6 @@ class Signup extends Component {
 
     if (rules.required) {
       isValid = value.trim() !== "" && isValid;
-    }
-
-    if (rules.minLength) {
-      isValid = value.length >= rules.minLength && isValid;
-    }
-
-    if (rules.maxLength) {
-      isValid = value.length <= rules.maxLength && isValid;
-    }
-
-    if (rules.isNumeric) {
-      const pattern = /^\d+$/;
-      isValid = pattern.test(value) && isValid;
     }
 
     if (rules.isPassword) {
@@ -125,6 +87,11 @@ class Signup extends Component {
     if (rules.equalsPassword) {
       const password = this.state.controls.password.value;
       isValid = value === password && isValid;
+    }
+
+    if (rules.isEmail) {
+      const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      isValid = pattern.test(value) && isValid;
     }
 
     return isValid;
@@ -140,8 +107,8 @@ class Signup extends Component {
           event.target.value,
           this.state.controls[controlName].validation
         ),
-        touched: true
-      }
+        touched: true,
+      },
     };
 
     let formIsValid = true;
@@ -152,7 +119,7 @@ class Signup extends Component {
     this.setState({ controls: updatedControls, formIsValid: formIsValid });
   };
 
-  submitHandler = event => {
+  submitHandler = (event) => {
     event.preventDefault();
 
     if (!this.state.formIsValid) {
@@ -160,21 +127,16 @@ class Signup extends Component {
       this.onShowAlert(message);
     } else {
       const signupInfo = {
-        user: {
-          // firstname: this.state.controls.firstname.value,
-          // lastname: this.state.controls.lastname.value,
-          username: this.state.controls.username.value,
-          password: this.state.controls.password.value,
-          password_confirmation: this.state.controls.passwordConfirmation.value,
-          email: this.state.controls.email.value
-        }
+        name: this.state.controls.username.value,
+        password: this.state.controls.password.value,
+        email: this.state.controls.email.value,
       };
 
       this.props.onSignup(signupInfo);
     }
   };
 
-  onShowAlert = message => {
+  onShowAlert = (message) => {
     this.setState({ message: message, visible: true }, () => {
       window.setTimeout(() => {
         this.setState({ visible: false });
@@ -187,11 +149,11 @@ class Signup extends Component {
     for (let key in this.state.controls) {
       formElementsArray.push({
         id: key,
-        config: this.state.controls[key]
+        config: this.state.controls[key],
       });
     }
 
-    let form = formElementsArray.map(formElement => (
+    let form = formElementsArray.map((formElement) => (
       <Input
         key={formElement.id}
         elementType={formElement.config.elementType}
@@ -200,7 +162,7 @@ class Signup extends Component {
         invalid={!formElement.config.valid}
         shouldValidate={formElement.config.validation}
         touched={formElement.config.touched}
-        changed={event => this.inputChangedHandler(event, formElement.id)}
+        changed={(event) => this.inputChangedHandler(event, formElement.id)}
       />
     ));
 
@@ -211,15 +173,14 @@ class Signup extends Component {
     let redirectTo = null;
 
     if (this.props.signedUp) {
-      redirectTo = <Redirect to="/profile" />;
+      redirectTo = <Redirect to="/signin" />;
+      this.props.onSignedUpToFalse();
     }
 
     return (
       <div>
         {redirectTo}
         <div className={classes.Signup}>
-          {/* {authRedirect}
-          {response} */}
           <form onSubmit={this.submitHandler}>
             {form}
             <Alert color="warning" isOpen={this.state.visible}>
@@ -233,16 +194,17 @@ class Signup extends Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     signedUp: state.signedUp,
-    loading: state.loading
+    loading: state.loading,
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    onSignup: signupInfo => dispatch(signup(signupInfo))
+    onSignup: (signupInfo) => dispatch(signup(signupInfo)),
+    onSignedUpToFalse: () => dispatch(setSignedUpToFalse()),
   };
 };
 

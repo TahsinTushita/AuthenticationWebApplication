@@ -126,7 +126,7 @@ module.exports = {
       }
 
       const result = compareSync(body.password, results.password);
-      if (results) {
+      if (result) {
         results.password = undefined;
         const jsontoken = "bearer " + sign({ result: results }, process.env.TOKEN_KEY, {
           expiresIn: "1h",

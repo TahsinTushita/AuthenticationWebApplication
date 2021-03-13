@@ -3,19 +3,18 @@ import { updateObject } from "../utility";
 
 const initialState = {
   token: null,
-  userId: null,
   error: false,
   loading: false,
   responseMessage: null,
   authRedirectPath: "/",
   signedUp: false,
-  user: null
+  authData: null,
 };
 
 const authStart = (state, action) => {
   return updateObject(state, {
     error: null,
-    loading: true
+    loading: true,
   });
 };
 
@@ -23,19 +22,18 @@ const authSuccess = (state, action) => {
   console.log("state check");
   console.log("success");
   return updateObject(state, {
-    token: action.authData.auth_token,
+    token: action.authData.token,
     error: null,
     loading: false,
     signedUp: false,
-    user: action.authData.user,
-    userId: action.userId
+    authData: action.authData,
   });
 };
 
 const authFail = (state, action) => {
   return updateObject(state, {
     error: action.error,
-    loading: false
+    loading: false,
   });
 };
 
@@ -44,15 +42,13 @@ const logout = (state, action) => {
     token: null,
     error: false,
     loading: false,
-    user: null,
-    userId: null
   });
 };
 
 const logoutFail = (state, action) => {
   return updateObject(state, {
     error: action.error,
-    loading: false
+    loading: false,
   });
 };
 
@@ -64,10 +60,14 @@ const signupFailed = (state, action) => {
   return updateObject(state, { error: action.error, signedUp: false });
 };
 
+const setSignedUpToFalse = (state, action) => {
+  return updateObject(state, { signedUp: false });
+};
+
 const setAuthRedirectPath = (state, action) => {
   return updateObject(state, {
     authRedirectPath: action.path,
-    signedUp: false
+    signedUp: false,
   });
 };
 
@@ -76,25 +76,8 @@ const authenticated = (state, action) => {
     token: action.token,
     error: null,
     loading: false,
-    user: action.user
   });
 };
-
-// const updateUserSuccess = (state, action) => {
-//   return updateObject(state, { user: action.updateInfo, loading: false });
-// };
-
-// const updateUserFail = (state, action) => {
-//   return updateObject(state, { error: action.error });
-// };
-
-// const changePasswordSuccess = (state, action) => {
-//   return updateObject(state, { loading: false });
-// };
-
-// const changePasswordFail = (state, action) => {
-//   return updateObject(state, { error: action.error });
-// };
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -122,20 +105,11 @@ const reducer = (state = initialState, action) => {
     case actionTypes.SIGNUP_FAILED:
       return signupFailed(state, action);
 
+    case actionTypes.SET_SIGNED_UP_TO_FALSE:
+      return setSignedUpToFalse(state, action);
+
     case actionTypes.AUTHENTICATED:
       return authenticated(state, action);
-
-    // case actionTypes.UPDATE_USER_SUCCESS:
-    //   return updateUserSuccess(state, action);
-
-    // case actionTypes.UPDATE_USER_FAIL:
-    //   return updateUserFail(state, action);
-
-    // case actionTypes.CHANGE_PASSWORD_SUCCESS:
-    //   return changePasswordSuccess(state, action);
-
-    // case actionTypes.CHANGE_PASSWORD_FAIL:
-    //   return changePasswordFail(state, action);
 
     default:
       return state;

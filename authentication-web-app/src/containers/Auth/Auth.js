@@ -3,12 +3,10 @@ import Input from "../../components/UI/Input/Input";
 import classes from "./Auth.css";
 import * as actions from "../../store/actions/index";
 import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import Axios from "axios";
 import Spinner from "../../components/UI/Spinner/Spinner";
-// import { MDBBtn } from "mdbreact";
-import { Alert, Button } from "reactstrap";
+import { Alert } from "reactstrap";
 
 class Auth extends Component {
   state = {
@@ -17,33 +15,34 @@ class Auth extends Component {
         elementType: "input",
         elementConfig: {
           type: "email",
-          placeholder: "Your Email"
+          placeholder: "Your Email",
         },
         value: "",
         validation: {
-          required: true
+          required: true,
+          isEmail: true,
         },
         valid: false,
-        touched: false
+        touched: false,
       },
 
       password: {
         elementType: "input",
         elementConfig: {
           type: "password",
-          placeholder: "Password"
+          placeholder: "Password",
         },
         value: "",
         validation: {
-          required: true
+          required: true,
         },
         valid: false,
-        touched: false
-      }
+        touched: false,
+      },
     },
     formIsValid: false,
     message: null,
-    visible: false
+    visible: false,
   };
 
   checkValidity = (value, rules) => {
@@ -53,16 +52,8 @@ class Auth extends Component {
       isValid = value.trim() !== "" && isValid;
     }
 
-    if (rules.minLength) {
-      isValid = value.length >= rules.minLength && isValid;
-    }
-
-    if (rules.maxLength) {
-      isValid = value.length <= rules.maxLength && isValid;
-    }
-
-    if (rules.isNumeric) {
-      const pattern = /^\d+$/;
+    if (rules.isEmail) {
+      const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       isValid = pattern.test(value) && isValid;
     }
 
@@ -79,8 +70,8 @@ class Auth extends Component {
           event.target.value,
           this.state.controls[controlName].validation
         ),
-        touched: true
-      }
+        touched: true,
+      },
     };
 
     let formIsValid = true;
@@ -91,7 +82,7 @@ class Auth extends Component {
     this.setState({ controls: updatedControls, formIsValid: formIsValid });
   };
 
-  submitHandler = event => {
+  submitHandler = (event) => {
     event.preventDefault();
 
     if (!this.state.formIsValid) {
@@ -102,10 +93,12 @@ class Auth extends Component {
         this.state.controls.email.value,
         this.state.controls.password.value
       );
+
+      this.props.history.push("/authState");
     }
   };
 
-  onShowAlert = message => {
+  onShowAlert = (message) => {
     this.setState({ message: message, visible: true }, () => {
       window.setTimeout(() => {
         this.setState({ visible: false });
@@ -113,21 +106,16 @@ class Auth extends Component {
     });
   };
 
-  signupBtnHandler = event => {
-    event.preventDefault();
-    this.props.history.push("/signup");
-  };
-
   render() {
     const formElementsArray = [];
     for (let key in this.state.controls) {
       formElementsArray.push({
         id: key,
-        config: this.state.controls[key]
+        config: this.state.controls[key],
       });
     }
 
-    let form = formElementsArray.map(formElement => (
+    let form = formElementsArray.map((formElement) => (
       <Input
         key={formElement.id}
         elementType={formElement.config.elementType}
@@ -136,7 +124,7 @@ class Auth extends Component {
         invalid={!formElement.config.valid}
         shouldValidate={formElement.config.validation}
         touched={formElement.config.touched}
-        changed={event => this.inputChangedHandler(event, formElement.id)}
+        changed={(event) => this.inputChangedHandler(event, formElement.id)}
       />
     ));
 
@@ -144,32 +132,24 @@ class Auth extends Component {
       form = <Spinner />;
     }
 
-    let authRedirect = null;
-
-    if (this.props.isAuthenticated) {
-      authRedirect = <Redirect to="/profile" />;
-    }
-
     return (
       <div>
         <div className={[classes.Row, `row`].join(" ")}>
           <div className={["col-md-10"].join(" ")}>
             <div className={classes.Auth}>
-              {authRedirect}
               <form onSubmit={this.submitHandler}>
                 {form}
                 <Alert color="warning" isOpen={this.state.visible}>
                   {this.state.message}
                 </Alert>
-                <button className={classes.LoginBtn}>SIGN IN</button>
+                <button
+                  className={classes.LoginBtn}
+                  onClick={this.submitHandler}
+                >
+                  SIGN IN
+                </button>
               </form>
             </div>
-          </div>
-          <div className={["col-md-2"].join(" ")}>
-            {/* <MDBBtn color="light-green" onClick={this.signupBtnHandler}>
-              SIGN UP
-            </MDBBtn> */}
-            <Button color="success" onClick={this.signupBtnHandler}>SIGN UP</Button>
           </div>
         </div>
       </div>
@@ -177,17 +157,17 @@ class Auth extends Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     loading: state.loading,
-    responseMessage: state.responseMessage,
-    isAuthenticated: state.token !== null
+    isAuthenticated: state.token !== null,
+    authData: state.authData,
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
-    onAuth: (email, password) => dispatch(actions.auth(email, password))
+    onAuth: (email, password) => dispatch(actions.auth(email, password)),
   };
 };
 

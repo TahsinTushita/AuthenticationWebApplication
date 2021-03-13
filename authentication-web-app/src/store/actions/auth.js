@@ -4,102 +4,98 @@ import Cookies from "js-cookie";
 
 export const authStart = () => {
   return {
-    type: actionTypes.AUTH_START
+    type: actionTypes.AUTH_START,
   };
 };
 
-export const authSuccess = (authData, userId) => {
+export const authSuccess = (authData) => {
   return {
     type: actionTypes.AUTH_SUCCESS,
     authData: authData,
-    userId: userId
   };
 };
 
-export const authFail = error => {
+export const authFail = (error) => {
   return {
     type: actionTypes.AUTH_FAIL,
-    error: error
+    error: error,
   };
 };
 
 export const auth = (email, password) => {
-  return dispatch => {
+  return (dispatch) => {
     dispatch(authStart());
 
     const authData = {
       email: email,
       password: password,
-      returnSecureToken: true
     };
 
-    Axios.post("sessions/login", authData)
-      .then(response => {
+    Axios.post("api/users/login", authData)
+      .then((response) => {
+        console.log(response);
+        if (response.data.token != undefined) {
+          localStorage.setItem("token", response.data.token);
+          Cookies.set("token", response.data.token, {
+            expires: 365,
+            path: "/",
+          });
+          dispatch(authSuccess(response.data));
+        } else {
+          dispatch(authFail(response.data));
+        }
         console.log(response.data);
-        localStorage.setItem("token", response.data.auth_token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        localStorage.setItem("userId", response.data.user.id);
-        Cookies.set("token", response.data.auth_token, {
-          expires: 365,
-          path: "/"
-        });
-        dispatch(authSuccess(response.data, response.data.user.id));
-        console.log(response.data.user);
       })
-      .catch(error => {
+      .catch((error) => {
         dispatch(authFail(error));
       });
   };
 };
 
-export const authenticated = (token, user) => {
+export const authenticated = (token) => {
   console.log("authenticated");
   return {
     type: actionTypes.AUTHENTICATED,
     token: token,
-    user: JSON.parse(user)
   };
 };
 
 export const logoutSuccess = () => {
   return {
-    type: actionTypes.LOGOUT
+    type: actionTypes.LOGOUT,
   };
 };
 
-export const logoutFail = error => {
+export const logoutFail = (error) => {
   return {
     type: actionTypes.LOGOUT_FAIL,
-    error: error
+    error: error,
   };
 };
 
 export const logout = () => {
-  return dispatch => {
+  return (dispatch) => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userId");
     Cookies.remove("token");
 
     dispatch(logoutSuccess());
   };
 };
 
-export const setAuthRedirectPath = path => {
+export const setAuthRedirectPath = (path) => {
   return {
     type: actionTypes.SET_AUTH_REDIRECT_PATH,
-    path: path
+    path: path,
   };
 };
 
 export const authStateCheck = () => {
-  return dispatch => {
+  return (dispatch) => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
 
     if (token) {
       console.log("success");
-      dispatch(authenticated(token, user));
+      dispatch(authenticated(token));
       return true;
     } else {
       dispatch(logout());
@@ -108,16 +104,16 @@ export const authStateCheck = () => {
   };
 };
 
-export const signup = signupInfo => {
-  return dispatch => {
+export const signup = (signupInfo) => {
+  return (dispatch) => {
     dispatch(authStart());
 
-    Axios.post("users/signup", signupInfo)
-      .then(response => {
+    Axios.post("api/users", signupInfo)
+      .then((response) => {
         console.log(response);
         dispatch(signupSuccess());
       })
-      .catch(error => {
+      .catch((error) => {
         dispatch(signupFailed(error));
       });
   };
@@ -125,71 +121,19 @@ export const signup = signupInfo => {
 
 export const signupSuccess = () => {
   return {
-    type: actionTypes.SIGNUP_SUCCESS
+    type: actionTypes.SIGNUP_SUCCESS,
   };
 };
 
-export const signupFailed = error => {
+export const signupFailed = (error) => {
   return {
     type: actionTypes.SIGNUP_FAILED,
-    error: error
+    error: error,
   };
 };
 
-// export const updateUserSuccess = updateInfo => {
-//   return {
-//     type: actionTypes.UPDATE_USER_SUCCESS,
-//     updateInfo: updateInfo
-//   };
-// };
-
-// export const updateUserFail = error => {
-//   return {
-//     type: actionTypes.UPDATE_USER_FAIL,
-//     error: error
-//   };
-// };
-
-// export const updateUser = (username, updateInfo) => {
-//   return dispatch => {
-//     dispatch(authStart());
-
-//     Axios.post("users/" + username + "/update", updateInfo)
-//       .then(response => {
-//         localStorage.removeItem("user");
-//         localStorage.setItem("user", JSON.stringify(response.data));
-//         dispatch(updateUserSuccess(response.data));
-//       })
-//       .catch(error => {
-//         dispatch(updateUserFail(error));
-//       });
-//   };
-// };
-
-// export const changePasswordSuccess = () => {
-//   return {
-//     type: actionTypes.CHANGE_PASSWORD_SUCCESS
-//   };
-// };
-
-// export const changePasswordFail = error => {
-//   return {
-//     type: actionTypes.CHANGE_PASSWORD_FAIL,
-//     error: error
-//   };
-// };
-
-// export const changePassword = password => {
-//   return dispatch => {
-//     dispatch(authStart());
-
-//     Axios.post("users/change-password", password)
-//       .then(response => {
-//         console.log(response);
-//         dispatch(changePasswordSuccess());
-//       })
-//       .catch(error => {
-//         dispatch(changePasswordFail(error));
-//       });
-//   };
-// };
+export const setSignedUpToFalse = () => {
+  return {
+    type: actionTypes.SET_SIGNED_UP_TO_FALSE,
+  };
+};
